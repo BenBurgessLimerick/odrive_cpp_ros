@@ -34,6 +34,10 @@ class TugBot : public hardware_interface::RobotHW {
         hardware_interface::JointHandle vel_handle_front_right(jnt_state_interface.getHandle("front_right"), &cmd[2]);
         hardware_interface::JointHandle vel_handle_back_right(jnt_state_interface.getHandle("back_right"), &cmd[3]);
         
+        for (int i = 0; i < 4; ++i) {
+            cmd[i] = 0.0;
+        }
+
         jnt_vel_interface.registerHandle(vel_handle_front_left);
         jnt_vel_interface.registerHandle(vel_handle_back_left);
         jnt_vel_interface.registerHandle(vel_handle_front_right);
@@ -62,10 +66,15 @@ class TugBot : public hardware_interface::RobotHW {
  
         float target_speeds[4];
         for (int i = 0; i < 4; ++i) {
-            target_speeds[i] = cmd[i] / (2 * 3.141592) * ENCODER_CPR;
+            if (cmd[i] < -200 || cmd[i] > 200) {
+                std::cout << "Motor speed request: " << cmd[i] << " ignored." << std::endl;
+                target_speeds[i] = 0.0;
+            } else {
+                target_speeds[i] = cmd[i] / (2 * 3.141592) * ENCODER_CPR;
+            }
             //std::cout << target_speeds[i] << " ";
         }
-        std::cout << std::endl;
+        // std::cout << std::endl;
         
         if (motors_enabled) {
             motor_driver->setMotorSpeeds(target_speeds);

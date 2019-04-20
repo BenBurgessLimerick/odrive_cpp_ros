@@ -11,6 +11,7 @@
 
 #define RIGHT_ODRIVE_SERIAL "35722175526216" 
 #define LEFT_ODRIVE_SERIAL  "35584669134923"
+#define ENCODER_CPR 90
 
 
 class TugBot : public hardware_interface::RobotHW {
@@ -40,23 +41,46 @@ class TugBot : public hardware_interface::RobotHW {
 
         registerInterface(&jnt_vel_interface);
 
+        std::string ser_nums[2] = {LEFT_ODRIVE_SERIAL, RIGHT_ODRIVE_SERIAL};
+        std::string set_motor_map[4] = {LEFT_ODRIVE_SERIAL, LEFT_ODRIVE_SERIAL, RIGHT_ODRIVE_SERIAL, RIGHT_ODRIVE_SERIAL};
+        uint8_t motor_indexes[4] = {1, 0, 0, 1};
+        motor_driver = new odrive::ODriveDriver(ser_nums, 2, set_motor_map, motor_indexes, 4);
+        int result = motor_driver->init();
+        if (result != 0) {
+            std::cout << "Coult not connect to odrives!"<< std::endl;
+            motors_enabled = false;
+        } else {
+            motors_enabled = true;
+        }
     }
 
     void updateJointsFromHardware() {
-        std::cout << "Updating joints" << std::endl;
+        //std::cout << "Updating joints" << std::endl;
     }   
 
     void writeCommandsToHardware() {
-        std::cout << "Writing to hardware" << std::endl;
+ 
+        float target_speeds[4];
+        for (int i = 0; i < 4; ++i) {
+            target_speeds[i] = cmd[i] / (2 * 3.141592) * ENCODER_CPR;
+            //std::cout << target_speeds[i] << " ";
+        }
+        std::cout << std::endl;
+        
+        if (motors_enabled) {
+            motor_driver->setMotorSpeeds(target_speeds);
+        }
     }
 
     private:
+        odrive::ODriveDriver *motor_driver;
         hardware_interface::JointStateInterface jnt_state_interface;
         hardware_interface::VelocityJointInterface jnt_vel_interface;
         double cmd[4];
         double pos[4];
         double vel[4];
         double eff[4];
+        bool motors_enabled;
 
 
 };
@@ -66,11 +90,20 @@ int main(int argc, char* argv[]) {
     TugBot robot;
     controller_manager::ControllerManager cm(&robot);
 
-    while(true) {
+    ros::AsyncSpinner spinner(1);
+    spinner.start();
+
+    ros::Time prev_time = ros::Time::now();
+    ros::Rate rate(10.0);
+    while(ros::ok()) {
+        const ros::Time time = ros::Time::now();
+        const ros::Duration period = time - prev_time;
+        prev_time = time;
+
         robot.updateJointsFromHardware();
-        cm.update(ros::Time::now(), ros::Duration(0.1));
+        cm.update(time, period);
         robot.writeCommandsToHardware();
-        sleep(1);
+        rate.sleep();
     }
     return 0;
 }

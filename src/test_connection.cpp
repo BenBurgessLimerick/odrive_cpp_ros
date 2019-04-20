@@ -16,7 +16,7 @@ int main(int argc, const char* argv[]) {
             1,              // 1 odrive connected 
             ser_motor_map,  // map for each motor to an odrive serial number
             motor_indexes,  // map for each motor being M0 or M1
-        2                   //2 motors connected
+            2               //2 motors connected
     );
 
     int result = odrive_cpp_ros.init(); // initialise the odrive - prepares the usb handles

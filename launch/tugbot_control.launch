@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+
+    <rosparam command="load" file="src/odrive_cpp_ros/config/control.yaml" />
+
+    <node name="tugbot_joint_publisher" pkg="controller_manager" type="spawner" args="tugbot_joint_publisher tugbot_velocity_controller"/>
+
+</launch>

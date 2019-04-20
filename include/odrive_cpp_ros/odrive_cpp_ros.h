@@ -50,8 +50,6 @@ namespace odrive
         ~OdriveDriver();
 
         int init(); // start communication
-        int runCalibration();
-        int setGoalMotorPositions(const double* axes_positions_in_radians_array); // assumed to match num_motors
         int readCurrentMotorPositions(int* axes_positions); // assumed to match num_motors
         int checkErrors(uint8_t* error_codes_array); // assumed to match num_motors
 

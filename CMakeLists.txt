@@ -6,6 +6,9 @@ add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  controller_manager
+  hardware_interface
+  roslaunch
 )
 
 find_package(PkgConfig REQUIRED)
@@ -33,4 +36,7 @@ add_executable(test_connection src/test_connection.cpp src/odrive_cpp_ros.cpp)
 target_link_libraries(test_connection ${catkin_LIBRARIES} ${LIBUSB1_LIBRARIES})
 add_dependencies(test_connection odrive_cpp_ros)
 
+add_executable(tugbot_interface src/tugbot_interface.cpp src/odrive_cpp_ros.cpp)
+target_link_libraries(tugbot_interface ${catkin_LIBRARIES} ${LIBUSB1_LIBRARIES})
+add_dependencies(tugbot_interface odrive_cpp_ros)
 

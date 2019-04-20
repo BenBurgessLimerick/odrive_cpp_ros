@@ -70,7 +70,7 @@ class TugBot : public hardware_interface::RobotHW {
                 std::cout << "Motor speed request: " << cmd[i] << " ignored." << std::endl;
                 target_speeds[i] = 0.0;
             } else {
-                target_speeds[i] = cmd[i] / (2 * 3.141592) * ENCODER_CPR;
+                target_speeds[i] = cmd[i] / (2 * 3.141592) * ENCODER_CPR * direction_multipliers[i];
             }
             //std::cout << target_speeds[i] << " ";
         }
@@ -89,6 +89,8 @@ class TugBot : public hardware_interface::RobotHW {
         double pos[4];
         double vel[4];
         double eff[4];
+
+        int direction_multipliers[4] = {-1, -1, 1, 1};
         bool motors_enabled;
 
 

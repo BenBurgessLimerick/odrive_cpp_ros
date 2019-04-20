@@ -1,7 +1,7 @@
 #include <iostream>
 #include "odrive_cpp_ros/odrive_cpp_ros.h"
 
-#define ODRIVE_SERIAL "35722175526216"
+#define ODRIVE_SERIAL "35584669134923"//"35722175526216"
 
 int main(int argc, const char* argv[]) {
 

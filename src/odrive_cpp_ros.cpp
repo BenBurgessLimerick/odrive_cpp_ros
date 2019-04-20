@@ -2,10 +2,9 @@
 #include "odrive_cpp_ros/odrive_endpoints.h"
 #include <algorithm>
 #include <cstring>
-#include <errno.h>
 using namespace odrive;
 
-OdriveDriver::OdriveDriver(const std::string* odrive_serial_numbers,
+ODriveDriver::ODriveDriver(const std::string* odrive_serial_numbers,
                const uint8_t num_odrives,
                const std::string* motor_to_odrive_serial_number_map,
                const uint8_t* motor_index_map,
@@ -33,7 +32,7 @@ OdriveDriver::OdriveDriver(const std::string* odrive_serial_numbers,
     libusb_context_ = NULL;
 }
 
-OdriveDriver::~OdriveDriver() {
+ODriveDriver::~ODriveDriver() {
     if (motor_to_odrive_handle_index_) {
         for (uint8_t i = 0; i < num_odrives_; ++i) {
             if (odrive_handles_[i]) {
@@ -58,7 +57,7 @@ OdriveDriver::~OdriveDriver() {
     if (libusb_context_) { libusb_exit(libusb_context_); }
 }
 
-int OdriveDriver::init() {
+int ODriveDriver::init() {
     if (libusb_context_ != NULL) {
       std::cerr << "ODrive SDK's init function has been called twice." << std::endl;
       return ODRIVE_SDK_NOT_INITIALIZED;
@@ -95,32 +94,72 @@ int OdriveDriver::init() {
     return ODRIVE_SDK_COMM_SUCCESS;
 }
 
-int OdriveDriver::readCurrentMotorPositions(int* axes_positions) {
+
+int ODriveDriver::setMotorSpeed(int motor_index, float motor_speed) {
     if (! motor_to_odrive_handle_index_) {
         return ODRIVE_SDK_NOT_INITIALIZED;
     }
+    
+    int axis_offset = (motor_index_map_[motor_index] == 1) ? per_axis_offset : 0;
+    int cmd = AXIS__CONTROLLER__VEL_SETPOINT + axis_offset;
+    
+    uint8_t handle_index = motor_to_odrive_handle_index_[motor_index];
 
-    int cmd;
-    int axis_offset;
-    for (uint8_t i = 0; i < num_motors_; ++i) {
-        axis_offset = (motor_index_map_[i] == 1) ? per_axis_offset : 0;
-        cmd = AXIS__ENCODER__COUNT_IN_CPR + axis_offset;
-        
-        std::cout << "Command: " << cmd << std::endl;
-        uint8_t handle_index = motor_to_odrive_handle_index_[i];
-        int ticks_read;
-        int result = odriveEndpointGetInt(odrive_handles_[handle_index], cmd, ticks_read);
-        
-        if (result != LIBUSB_SUCCESS) {
-            std::cerr << "Couldn't send `" << std::to_string(cmd) << "` to '" << odrive_serial_numbers_[handle_index] << "': `" << result << "` (see prior error message)" << std::endl;
-            return ODRIVE_SDK_UNEXPECTED_RESPONSE;
-        }
-        axes_positions[i] = ticks_read;
+    int result = odriveEndpointSetFloat(odrive_handles_[handle_index], cmd, motor_speed);
+    
+    if (result != LIBUSB_SUCCESS) {
+        std::cerr << "Couldn't send `" << std::to_string(cmd) << "` to '" << odrive_serial_numbers_[handle_index] << "': `" << result << "` (see prior error message)" << std::endl;
+        return ODRIVE_SDK_UNEXPECTED_RESPONSE;
     }
     return ODRIVE_SDK_COMM_SUCCESS;
 }
 
-int OdriveDriver::checkErrors(uint8_t* error_codes_array) {
+int ODriveDriver::setMotorSpeeds(float* motor_speeds) {
+    for (uint8_t i = 0; i < num_motors_; ++i) {
+        int result = setMotorSpeed(i, motor_speeds[i]);
+        if (result != ODRIVE_SDK_COMM_SUCCESS) {
+            std::cout << "Setting speed for motor #" << i << " failed. Result: " << result << std::endl;
+            return result;
+        }
+    }
+    return ODRIVE_SDK_COMM_SUCCESS;
+}
+
+int ODriveDriver::readCurrentMotorPosition(int motor_index, int &motor_position) {
+    if (! motor_to_odrive_handle_index_) {
+        return ODRIVE_SDK_NOT_INITIALIZED;
+    }
+
+    int axis_offset = (motor_index_map_[motor_index] == 1) ? per_axis_offset : 0;
+    int cmd = AXIS__ENCODER__COUNT_IN_CPR + axis_offset;
+    
+    uint8_t handle_index = motor_to_odrive_handle_index_[motor_index];
+    int ticks_read;
+    int result = odriveEndpointGetInt(odrive_handles_[handle_index], cmd, ticks_read);
+    
+    if (result != LIBUSB_SUCCESS) {
+        std::cerr << "Couldn't send `" << std::to_string(cmd) << "` to '" << odrive_serial_numbers_[handle_index] << "': `" << result << "` (see prior error message)" << std::endl;
+        return ODRIVE_SDK_UNEXPECTED_RESPONSE;
+    }
+    motor_position = ticks_read;
+    return ODRIVE_SDK_COMM_SUCCESS;
+}
+
+
+int ODriveDriver::readCurrentMotorPositions(int* axes_positions) {
+    int motor_position;
+    for (uint8_t i = 0; i < num_motors_; ++i) {
+        int result = readCurrentMotorPosition(i, motor_position);
+        if (result != ODRIVE_SDK_COMM_SUCCESS) {
+            std::cout << "Reading position from motor #" << i << " failed. Result: " << result << std::endl;
+            return result;
+        }
+        axes_positions[i] = motor_position;
+    }
+    return ODRIVE_SDK_COMM_SUCCESS;
+}
+
+int ODriveDriver::checkErrors(uint8_t* error_codes_array) {
     if (! motor_to_odrive_handle_index_) {
         return ODRIVE_SDK_NOT_INITIALIZED;
     }
@@ -145,7 +184,7 @@ int OdriveDriver::checkErrors(uint8_t* error_codes_array) {
 }
 
 
-int OdriveDriver::initUSBHandlesBySNs() {
+int ODriveDriver::initUSBHandlesBySNs() {
     libusb_device ** usb_device_list;
     ssize_t device_count = libusb_get_device_list(libusb_context_, &usb_device_list);
     if (device_count <= 0) {
@@ -205,7 +244,7 @@ int OdriveDriver::initUSBHandlesBySNs() {
 }
 
 
-int OdriveDriver::odriveEndpointRequest(libusb_device_handle* handle, int endpoint_id, commBuffer& received_payload, int& received_length, commBuffer payload, int ack, int length) {
+int ODriveDriver::odriveEndpointRequest(libusb_device_handle* handle, int endpoint_id, commBuffer& received_payload, int& received_length, commBuffer payload, int ack, int length) {
     commBuffer send_buffer;
     commBuffer receive_buffer;
     unsigned char receive_bytes[ODRIVE_SDK_MAX_RESULT_LENGTH] = { 0 };
@@ -255,7 +294,7 @@ int OdriveDriver::odriveEndpointRequest(libusb_device_handle* handle, int endpoi
     return LIBUSB_SUCCESS;
 }
 
-int OdriveDriver::odriveEndpointGetUInt8(libusb_device_handle* handle, int endpoint_id, uint8_t& value) {
+int ODriveDriver::odriveEndpointGetUInt8(libusb_device_handle* handle, int endpoint_id, uint8_t& value) {
     commBuffer send_payload;
     commBuffer receive_payload;
     int received_length;
@@ -269,7 +308,7 @@ int OdriveDriver::odriveEndpointGetUInt8(libusb_device_handle* handle, int endpo
     return LIBUSB_SUCCESS;
 }
 
-int OdriveDriver::odriveEndpointGetShort(libusb_device_handle* handle, int endpoint_id, short& value) {
+int ODriveDriver::odriveEndpointGetShort(libusb_device_handle* handle, int endpoint_id, short& value) {
     commBuffer send_payload;
     commBuffer receive_payload;
     int received_length;
@@ -282,7 +321,7 @@ int OdriveDriver::odriveEndpointGetShort(libusb_device_handle* handle, int endpo
 
     return LIBUSB_SUCCESS;
 }
-int OdriveDriver::odriveEndpointGetInt(libusb_device_handle* handle, int endpoint_id, int& value) {
+int ODriveDriver::odriveEndpointGetInt(libusb_device_handle* handle, int endpoint_id, int& value) {
     commBuffer send_payload;
     commBuffer receive_payload;
     int received_length;
@@ -295,7 +334,7 @@ int OdriveDriver::odriveEndpointGetInt(libusb_device_handle* handle, int endpoin
     return LIBUSB_SUCCESS;
 }
 
-int OdriveDriver::odriveEndpointGetUInt64(libusb_device_handle* handle, int id, uint64_t& value) {
+int ODriveDriver::odriveEndpointGetUInt64(libusb_device_handle* handle, int id, uint64_t& value) {
     commBuffer send_payload;
     commBuffer receive_payload;
     int received_length;
@@ -307,7 +346,7 @@ int OdriveDriver::odriveEndpointGetUInt64(libusb_device_handle* handle, int id, 
     return LIBUSB_SUCCESS;
 }
 
-int OdriveDriver::odriveEndpointSetInt(libusb_device_handle* handle, int endpoint_id, const int& value) {
+int ODriveDriver::odriveEndpointSetInt(libusb_device_handle* handle, int endpoint_id, const int& value) {
     commBuffer send_payload;
     commBuffer receive_payload;
     int received_length;
@@ -319,7 +358,7 @@ int OdriveDriver::odriveEndpointSetInt(libusb_device_handle* handle, int endpoin
     return ODRIVE_SDK_COMM_SUCCESS;
 }
 
-int OdriveDriver::odriveEndpointSetFloat(libusb_device_handle* handle, int endpoint_id, const float& value) {
+int ODriveDriver::odriveEndpointSetFloat(libusb_device_handle* handle, int endpoint_id, const float& value) {
     commBuffer send_payload;
     commBuffer receive_payload;
     int received_length;
@@ -332,13 +371,13 @@ int OdriveDriver::odriveEndpointSetFloat(libusb_device_handle* handle, int endpo
 }
 
 
-void OdriveDriver::appendShortToCommBuffer(commBuffer& buf, const short value) {
+void ODriveDriver::appendShortToCommBuffer(commBuffer& buf, const short value) {
     buf.push_back((value >> 0) & 0xFF);
     buf.push_back((value >> 8) & 0xFF);
 }
 
 
-void OdriveDriver::readShortFromCommBuffer(commBuffer& byte_array, short& value) {
+void ODriveDriver::readShortFromCommBuffer(commBuffer& byte_array, short& value) {
   //TODO: Check that -ve values are being converted correctly.
   value = 0;
   for(int i = 0; i < sizeof(short); ++i) {
@@ -351,20 +390,20 @@ void OdriveDriver::readShortFromCommBuffer(commBuffer& byte_array, short& value)
 }
 
 
-void OdriveDriver::serializeCommBufferFloat(commBuffer& buf, const float& value) {
+void ODriveDriver::serializeCommBufferFloat(commBuffer& buf, const float& value) {
     for(int i = 0; i < sizeof(float); i++){
        buf.push_back(((unsigned char*)&value)[i]);
     }
 }
 
-void OdriveDriver::serializeCommBufferInt(commBuffer& buf, const int& value) {
+void ODriveDriver::serializeCommBufferInt(commBuffer& buf, const int& value) {
     buf.push_back((value >> 0) & 0xFF);
     buf.push_back((value >> 8) & 0xFF);
     buf.push_back((value >> 16) & 0xFF);
     buf.push_back((value >> 24) & 0xFF);
 }
 
-void OdriveDriver::deserializeCommBufferInt(commBuffer& byte_array, int& value) {
+void ODriveDriver::deserializeCommBufferInt(commBuffer& byte_array, int& value) {
   //TODO: Check that -ve values are being converted correctly.
   value = 0;
   for(int i = 0; i < byte_array.size(); ++i) {
@@ -376,7 +415,7 @@ void OdriveDriver::deserializeCommBufferInt(commBuffer& byte_array, int& value) 
   value = be32toh(value);
 }
 
-void OdriveDriver::deserializeCommBufferUInt64(commBuffer& v, uint64_t& value) {
+void ODriveDriver::deserializeCommBufferUInt64(commBuffer& v, uint64_t& value) {
   value = 0;
   for(int i = 0; i < v.size(); ++i) {
      value <<= 8;
@@ -387,11 +426,11 @@ void OdriveDriver::deserializeCommBufferUInt64(commBuffer& v, uint64_t& value) {
   value = be64toh(value);
 }
 
-void OdriveDriver::deserializeCommBufferUInt8(commBuffer& v, uint8_t& value) {
+void ODriveDriver::deserializeCommBufferUInt8(commBuffer& v, uint8_t& value) {
   value = v[0];
 }
 
-commBuffer OdriveDriver::createODrivePacket(short seq_no, int endpoint_id, short response_size, const commBuffer& input) {
+commBuffer ODriveDriver::createODrivePacket(short seq_no, int endpoint_id, short response_size, const commBuffer& input) {
     commBuffer packet;
     short crc = 0;
     if ((endpoint_id & 0x7fff) == 0) {
@@ -414,7 +453,7 @@ commBuffer OdriveDriver::createODrivePacket(short seq_no, int endpoint_id, short
     return packet;
 }
 
-commBuffer OdriveDriver::decodeODrivePacket(commBuffer& buf, short& seq_no, commBuffer& received_packet) {
+commBuffer ODriveDriver::decodeODrivePacket(commBuffer& buf, short& seq_no, commBuffer& received_packet) {
     commBuffer payload;
     readShortFromCommBuffer(buf, seq_no); // reads 2 bytes so start next for loop at 2
     seq_no &= 0x7fff;

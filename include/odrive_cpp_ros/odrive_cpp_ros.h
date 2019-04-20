@@ -38,19 +38,26 @@ typedef std::vector<uint8_t> commBuffer;
 namespace odrive
 {
 
-    class OdriveDriver {
+    class ODriveDriver {
 
     public:
-        OdriveDriver(
+        ODriveDriver(
                 const std::string* odrive_serial_numbers,
                 const uint8_t num_odrives,
                 const std::string* motor_to_odrive_serial_number_map,
                 const uint8_t* motor_index_map,
                 const uint8_t num_motors); 
-        ~OdriveDriver();
+        ~ODriveDriver();
 
         int init(); // start communication
+
+        int setMotorSpeed(int motor_index, float motor_speed);
+        int setMotorSpeeds(float* motor_speeds); // assumed to match num_motors
+
+
+        int readCurrentMotorPosition(int motor_index, int &motor_position);
         int readCurrentMotorPositions(int* axes_positions); // assumed to match num_motors
+        
         int checkErrors(uint8_t* error_codes_array); // assumed to match num_motors
 
     private:

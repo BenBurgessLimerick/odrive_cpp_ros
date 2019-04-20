@@ -33,15 +33,6 @@ typedef std::vector<uint8_t> commBuffer;
 #define ODRIVE_SDK_WRITING_ENDPOINT 3 // found with running expore_odrive -v
 #define ODRIVE_SDK_READING_ENDPOINT 131 // found with running expore_odrive -v
 
-#define ODRIVE_SDK_SET_GOAL_0_CMD 31 // found with running expore_odrive -v
-#define ODRIVE_SDK_SET_GOAL_1_CMD 131 // found with running expore_odrive -v
-
-#define ODRIVE_SDK_GET_ENCODER_0_STATE 79 // found with running expore_odrive -v
-#define ODRIVE_SDK_GET_ENCODER_1_STATE 179 // found with running expore_odrive -v
-
-#define ODRIVE_SDK_GET_MOTOR_0_ERROR 30 // found with running expore_odrive -v
-#define ODRIVE_SDK_GET_MOTOR_1_ERROR 130 // found with running expore_odrive -v
-
 #define ODRIVE_SDK_MOTOR_NO_ERROR_STATUS 0 // what odrive would return when no motor errors
 
 namespace odrive

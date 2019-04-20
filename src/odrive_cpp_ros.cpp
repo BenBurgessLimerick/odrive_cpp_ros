@@ -103,11 +103,7 @@ int OdriveDriver::readCurrentMotorPositions(int* axes_positions) {
     int cmd;
     int axis_offset;
     for (uint8_t i = 0; i < num_motors_; ++i) {
-        if (motor_index_map_[i] == 1) {
-            axis_offset = per_axis_offset;
-        } else {
-            axis_offset = 0;
-        }
+        axis_offset = (motor_index_map_[i] == 1) ? per_axis_offset : 0;
         cmd = AXIS__ENCODER__COUNT_IN_CPR + axis_offset;
         
         std::cout << "Command: " << cmd << std::endl;
@@ -130,10 +126,13 @@ int OdriveDriver::checkErrors(uint8_t* error_codes_array) {
     }
 
     int cmd;
+    int axis_offset;
     for (uint8_t i = 0; i < num_motors_; ++i) {
+        axis_offset = (motor_index_map_[i] == 1) ? per_axis_offset : 0;
+        cmd = AXIS__ERROR + axis_offset;
+        
         uint8_t handle_index = motor_to_odrive_handle_index_[i];
-        cmd = motor_index_map_[i] ? ODRIVE_SDK_GET_MOTOR_1_ERROR : ODRIVE_SDK_GET_MOTOR_0_ERROR;
-
+        
         uint8_t motor_error_output;
         int result = odriveEndpointGetUInt8(odrive_handles_[handle_index], cmd, motor_error_output);
         if (result != LIBUSB_SUCCESS) {

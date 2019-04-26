@@ -64,6 +64,9 @@ class TugBot : public hardware_interface::RobotHW {
         
         for (int i = 0; i < 4; ++i) {
             motor_driver->getMotorSpeed(i, speed);
+            int motor_pos;
+            motor_driver->readCurrentMotorPosition(i, motor_pos);
+            std::cout << "sad: " << i << " : " << motor_pos << std::endl;
         }
     }   
 

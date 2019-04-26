@@ -67,6 +67,7 @@ class TugBot : public hardware_interface::RobotHW {
             int motor_pos;
             motor_driver->readCurrentMotorPosition(i, motor_pos);
             std::cout << "sad: " << i << " : " << motor_pos << std::endl;
+            motor_driver->getMotorPosition(i, motor_pos);
         }
     }   
 

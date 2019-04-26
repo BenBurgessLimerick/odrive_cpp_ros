@@ -56,6 +56,8 @@ namespace odrive
 
         int getMotorSpeed(int motor_index, float &motor_speed);
 
+        int getMotorPosition(int motor_index, int &motor_position);
+
         int readCurrentMotorPosition(int motor_index, int &motor_position);
         int readCurrentMotorPositions(int* axes_positions); // assumed to match num_motors
         
@@ -80,6 +82,8 @@ namespace odrive
 
         short outbound_seq_no_; // unique ids for packets send to odrive
         int getFloat(int motor_index, float &param, int endpoint_id);
+        int getInt(int motor_index, int &param, int endpoint_id);
+
         int odriveEndpointRequest(libusb_device_handle* handle, int endpoint_id, commBuffer& received_payload, int& received_length, const commBuffer payload, const int ack, const int length);
         
         int odriveEndpointGetShort(libusb_device_handle* handle, int endpoint_id, short& value);

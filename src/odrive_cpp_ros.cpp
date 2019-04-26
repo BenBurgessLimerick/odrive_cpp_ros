@@ -112,11 +112,34 @@ int ODriveDriver::getFloat(int motor_index, float &param, int endpoint_id) {
     return ODRIVE_SDK_COMM_SUCCESS;
 }
 
+
+int ODriveDriver::getInt(int motor_index, int &param, int endpoint_id) {
+    if (! motor_to_odrive_handle_index_) {
+        return ODRIVE_SDK_NOT_INITIALIZED;
+    }
+
+    int axis_offset = (motor_index_map_[motor_index] == 1) ? per_axis_offset : 0;
+    int cmd = endpoint_id + axis_offset;
+
+    uint8_t handle_index = motor_to_odrive_handle_index_[motor_index];
+
+    int result = odriveEndpointGetInt(odrive_handles_[handle_index], cmd, param);
+    if (result != LIBUSB_SUCCESS) {
+        std::cerr << "Couldn't send `" << std::to_string(cmd) << "` to '" << odrive_serial_numbers_[handle_index] << "': `" << result << "` (see prior error message)" << std::endl;
+        return ODRIVE_SDK_UNEXPECTED_RESPONSE;
+    }
+    return ODRIVE_SDK_COMM_SUCCESS;
+}
+
 int ODriveDriver::getMotorSpeed(int motor_index, float &motor_speed) {
     getFloat(motor_index, motor_speed, AXIS__ENCODER__VEL_ESTIMATE);
     std::cout << "Motor speed: " << motor_index << " : " << motor_speed << std::endl;
 }
 
+int ODriveDriver::getMotorPosition(int motor_index, int &motor_position) {
+    getInt(motor_index, motor_position, AXIS__ENCODER__COUNT_IN_CPR);
+    std::cout << "Motor pos: " << motor_index << " : " << motor_position;
+}
 
 
 int ODriveDriver::setMotorSpeed(int motor_index, float motor_speed) {

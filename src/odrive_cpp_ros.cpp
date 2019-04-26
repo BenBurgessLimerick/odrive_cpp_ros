@@ -131,6 +131,11 @@ int ODriveDriver::getInt(int motor_index, int &param, int endpoint_id) {
     return ODRIVE_SDK_COMM_SUCCESS;
 }
 
+int ODriveDriver::getBusVoltage(int motor_index, float &voltage) {
+    getFloat(motor_index, voltage, VBUS_VOLTAGE);
+    std::cout << "Voltage: " << motor_index << " : " << voltage << std::endl;
+}
+
 int ODriveDriver::getMotorSpeed(int motor_index, float &motor_speed) {
     getFloat(motor_index, motor_speed, AXIS__ENCODER__VEL_ESTIMATE);
     std::cout << "Motor speed: " << motor_index << " : " << motor_speed << std::endl;
@@ -138,7 +143,7 @@ int ODriveDriver::getMotorSpeed(int motor_index, float &motor_speed) {
 
 int ODriveDriver::getMotorPosition(int motor_index, int &motor_position) {
     getInt(motor_index, motor_position, AXIS__ENCODER__COUNT_IN_CPR);
-    std::cout << "Motor pos: " << motor_index << " : " << motor_position;
+    std::cout << "Motor pos: " << motor_index << " : " << motor_position << std::endl;
 }
 
 

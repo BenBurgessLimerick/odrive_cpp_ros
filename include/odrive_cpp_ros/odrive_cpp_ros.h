@@ -55,6 +55,7 @@ namespace odrive
         int setMotorSpeeds(float* motor_speeds); // assumed to match num_motors
 
         int getMotorSpeed(int motor_index, float &motor_speed);
+        int getBusVoltage(int motor_index, float &voltage);
 
         int getMotorPosition(int motor_index, int &motor_position);
 

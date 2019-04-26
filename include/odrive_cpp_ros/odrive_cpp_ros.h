@@ -54,6 +54,7 @@ namespace odrive
         int setMotorSpeed(int motor_index, float motor_speed);
         int setMotorSpeeds(float* motor_speeds); // assumed to match num_motors
 
+        int getMotorSpeed(int motor_index, float &motor_speed);
 
         int readCurrentMotorPosition(int motor_index, int &motor_position);
         int readCurrentMotorPositions(int* axes_positions); // assumed to match num_motors
@@ -78,21 +79,29 @@ namespace odrive
         int initUSBHandlesBySNs();
 
         short outbound_seq_no_; // unique ids for packets send to odrive
-
+        int getFloat(int motor_index, float &param, int endpoint_id);
         int odriveEndpointRequest(libusb_device_handle* handle, int endpoint_id, commBuffer& received_payload, int& received_length, const commBuffer payload, const int ack, const int length);
+        
         int odriveEndpointGetShort(libusb_device_handle* handle, int endpoint_id, short& value);
         int odriveEndpointGetInt(libusb_device_handle* handle, int endpoint_id, int& value);
         int odriveEndpointGetUInt8(libusb_device_handle* handle, int endpoint_id, uint8_t& value);
         int odriveEndpointGetUInt64(libusb_device_handle* handle, int endpoint_id, uint64_t& value);
+        int odriveEndpointGetFloat(libusb_device_handle* handle, int endpoint_id, float& value);
+        
         int odriveEndpointSetInt(libusb_device_handle* handle, int endpoint_id, const int& value);
         int odriveEndpointSetFloat(libusb_device_handle* handle, int endpoint_id, const float& value);
+        
         void serializeCommBufferInt(commBuffer& buf, const int& value);
         void serializeCommBufferFloat(commBuffer& buf, const float& value);
-        void deserializeCommBufferInt(commBuffer& buf, int& value);
+       
         void appendShortToCommBuffer(commBuffer& buf, const short value);
+        
         void readShortFromCommBuffer(commBuffer& buf, short& value);
+
+        void deserializeCommBufferInt(commBuffer& buf, int& value);
         void deserializeCommBufferUInt64(commBuffer& buf, uint64_t& value);
         void deserializeCommBufferUInt8(commBuffer& buf, uint8_t& value);
+        void deserializeCommBufferFloat(commBuffer& buf, float& value);
 
         commBuffer createODrivePacket(short seq_no, int endpoint, short response_size, const commBuffer& payload_ref);
         commBuffer decodeODrivePacket(commBuffer& buf, short& seq_no, commBuffer& received_packet);

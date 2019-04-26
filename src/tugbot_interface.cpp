@@ -60,6 +60,10 @@ class TugBot : public hardware_interface::RobotHW {
 
     void updateJointsFromHardware() {
         //std::cout << "Updating joints" << std::endl;
+        float speed;
+        for (int i = 0; i < 4; ++i) {
+            motor_driver->getMotorSpeed(i, speed);
+        }
     }   
 
     void writeCommandsToHardware() {

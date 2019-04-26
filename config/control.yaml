@@ -20,7 +20,7 @@ tugbot_velocity_controller:
 
   # Odometry fused with IMU is published by robot_localization, so
   # no need to publish a TF based on encoders alone.
-  enable_odom_tf: false
+  enable_odom_tf: true
 
   estimate_velocity_from_position: false
 

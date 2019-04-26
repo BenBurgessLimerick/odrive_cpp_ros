@@ -94,6 +94,30 @@ int ODriveDriver::init() {
     return ODRIVE_SDK_COMM_SUCCESS;
 }
 
+int ODriveDriver::getFloat(int motor_index, float &param, int endpoint_id) {
+    if (! motor_to_odrive_handle_index_) {
+        return ODRIVE_SDK_NOT_INITIALIZED;
+    }
+
+    int axis_offset = (motor_index_map_[motor_index] == 1) ? per_axis_offset : 0;
+    int cmd = endpoint_id + axis_offset;
+
+     uint8_t handle_index = motor_to_odrive_handle_index_[motor_index];
+
+     int result = odriveEndpointGetFloat(odrive_handles_[handle_index], cmd, param);
+      if (result != LIBUSB_SUCCESS) {
+        std::cerr << "Couldn't send `" << std::to_string(cmd) << "` to '" << odrive_serial_numbers_[handle_index] << "': `" << result << "` (see prior error message)" << std::endl;
+        return ODRIVE_SDK_UNEXPECTED_RESPONSE;
+    }
+    return ODRIVE_SDK_COMM_SUCCESS;
+}
+
+int ODriveDriver::getMotorSpeed(int motor_index, float &motor_speed) {
+    getFloat(motor_index, motor_speed, AXIS__ENCODER__VEL_ESTIMATE);
+    std::cout << "Motor speed: " << motor_index << " : " << motor_speed << std::endl;
+}
+
+
 
 int ODriveDriver::setMotorSpeed(int motor_index, float motor_speed) {
     if (! motor_to_odrive_handle_index_) {
@@ -308,6 +332,22 @@ int ODriveDriver::odriveEndpointGetUInt8(libusb_device_handle* handle, int endpo
     return LIBUSB_SUCCESS;
 }
 
+
+int ODriveDriver::odriveEndpointGetFloat(libusb_device_handle* handle, int endpoint_id, float& value) {
+    commBuffer send_payload;
+    commBuffer receive_payload;
+    int received_length;
+    int result = odriveEndpointRequest(handle, endpoint_id, receive_payload, received_length, send_payload, 1, 1);
+    if (result != LIBUSB_SUCCESS) {
+        return result;
+    }
+
+    deserializeCommBufferFloat(receive_payload, value);
+
+    return LIBUSB_SUCCESS;
+}
+
+
 int ODriveDriver::odriveEndpointGetShort(libusb_device_handle* handle, int endpoint_id, short& value) {
     commBuffer send_payload;
     commBuffer receive_payload;
@@ -402,6 +442,11 @@ void ODriveDriver::serializeCommBufferInt(commBuffer& buf, const int& value) {
     buf.push_back((value >> 16) & 0xFF);
     buf.push_back((value >> 24) & 0xFF);
 }
+
+void ODriveDriver::deserializeCommBufferFloat(commBuffer& byte_array, float& value) {
+    memcpy(&value, &byte_array, byte_array.size());
+}
+
 
 void ODriveDriver::deserializeCommBufferInt(commBuffer& byte_array, int& value) {
   //TODO: Check that -ve values are being converted correctly.

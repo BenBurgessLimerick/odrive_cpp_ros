@@ -102,10 +102,10 @@ int ODriveDriver::getFloat(int motor_index, float &param, int endpoint_id) {
     int axis_offset = (motor_index_map_[motor_index] == 1) ? per_axis_offset : 0;
     int cmd = endpoint_id + axis_offset;
 
-     uint8_t handle_index = motor_to_odrive_handle_index_[motor_index];
+    uint8_t handle_index = motor_to_odrive_handle_index_[motor_index];
 
-     int result = odriveEndpointGetFloat(odrive_handles_[handle_index], cmd, param);
-      if (result != LIBUSB_SUCCESS) {
+    int result = odriveEndpointGetFloat(odrive_handles_[handle_index], cmd, param);
+    if (result != LIBUSB_SUCCESS) {
         std::cerr << "Couldn't send `" << std::to_string(cmd) << "` to '" << odrive_serial_numbers_[handle_index] << "': `" << result << "` (see prior error message)" << std::endl;
         return ODRIVE_SDK_UNEXPECTED_RESPONSE;
     }
@@ -341,9 +341,13 @@ int ODriveDriver::odriveEndpointGetFloat(libusb_device_handle* handle, int endpo
     if (result != LIBUSB_SUCCESS) {
         return result;
     }
-
+    
+    std::cout << result <<  "Here: " << receive_payload.size() << std::endl;
+    for ( int i = 0; i < receive_payload.size(); ++i) {
+        std::cout << i << " "  << receive_payload[i] << std::endl;
+    }
     deserializeCommBufferFloat(receive_payload, value);
-
+    std::cout << value << std::endl;
     return LIBUSB_SUCCESS;
 }
 
@@ -444,6 +448,10 @@ void ODriveDriver::serializeCommBufferInt(commBuffer& buf, const int& value) {
 }
 
 void ODriveDriver::deserializeCommBufferFloat(commBuffer& byte_array, float& value) {
+    for(int i =0; i < byte_array.size(); ++i) {
+        std::cout << i << " " << byte_array[i] << " ";
+    }
+    std::cout << std::endl;
     memcpy(&value, &byte_array, byte_array.size());
 }
 

@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-    <include file="$(find rosbridge_server)/directory/rosbridge_websocket.launch"/>
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
     <rosparam command="load" file="src/odrive_cpp_ros/config/control.yaml" />
-    <node name="rosbridge_web" pkg="rosbrige_">
+    <node name="tugbot_interface" pkg="odrive_cpp_ros" type="tugbot_interface"/>
     <node name="tugbot_joint_publisher" pkg="controller_manager" type="spawner" args="tugbot_joint_publisher tugbot_velocity_controller"/>
-    <remap from= "tugbot/cmd_vel" to="tugbot_velocity_controller/cmd_vel">
 </launch>

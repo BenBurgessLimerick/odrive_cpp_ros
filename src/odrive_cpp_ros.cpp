@@ -365,12 +365,12 @@ int ODriveDriver::odriveEndpointGetFloat(libusb_device_handle* handle, int endpo
     commBuffer send_payload;
     commBuffer receive_payload;
     int received_length;
-    int result = odriveEndpointRequest(handle, endpoint_id, receive_payload, received_length, send_payload, 1, 1);
+    int result = odriveEndpointRequest(handle, endpoint_id, receive_payload, received_length, send_payload, 1, 4);
     if (result != LIBUSB_SUCCESS) {
         return result;
     }
     
-    std::cout << result <<  "Here: " << receive_payload.size() << std::endl;
+    std::cout << result << " Here: " << receive_payload.size() << std::endl;
     for ( int i = 0; i < receive_payload.size(); ++i) {
         std::cout << i << " "  << receive_payload[i] << std::endl;
     }

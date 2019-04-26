@@ -61,14 +61,15 @@ class TugBot : public hardware_interface::RobotHW {
     void updateJointsFromHardware() {
         std::cout << "Updating joints" << std::endl;
         float speed;
-        
+       
         for (int i = 0; i < 4; ++i) {
-            // motor_driver->getMotorSpeed(i, speed);
-            // int motor_pos;
+             motor_driver->getMotorSpeed(i, speed);
+            vel[i] = ((speed * direction_multipliers[i]) / ENCODER_CPR) * 2 * 3.141592;
+             // int motor_pos;
             // motor_driver->readCurrentMotorPosition(i, motor_pos);
             // std::cout << "sad: " << i << " : " << motor_pos << std::endl;
             // motor_driver->getMotorPosition(i, motor_pos);
-            motor_driver->getBusVoltage(i, speed);
+            //motor_driver->getBusVoltage(i, speed);
         }
     }   
 

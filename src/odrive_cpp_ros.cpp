@@ -370,12 +370,7 @@ int ODriveDriver::odriveEndpointGetFloat(libusb_device_handle* handle, int endpo
         return result;
     }
     
-    std::cout << result << " Here: " << receive_payload.size() << std::endl;
-    for ( int i = 0; i < receive_payload.size(); ++i) {
-        std::cout << i << " "  << receive_payload[i] << std::endl;
-    }
     deserializeCommBufferFloat(receive_payload, value);
-    std::cout << value << std::endl;
     return LIBUSB_SUCCESS;
 }
 
@@ -476,11 +471,13 @@ void ODriveDriver::serializeCommBufferInt(commBuffer& buf, const int& value) {
 }
 
 void ODriveDriver::deserializeCommBufferFloat(commBuffer& byte_array, float& value) {
-    for(int i =0; i < byte_array.size(); ++i) {
-        std::cout << i << " " << byte_array[i] << " ";
-    }
-    std::cout << std::endl;
-    memcpy(&value, &byte_array, byte_array.size());
+    //std::reverse(std::begin(byte_array), std::end(byte_array));
+    //for (int i= 0; i< byte_array.size(); ++i) {
+      //  std::cout << " " << ((int) byte_array[i]);
+    //}
+    //std::cout << std::endl;
+    memcpy(&value, &(byte_array[0]), byte_array.size());
+    std::cout << value << std::endl;
 }
 
 

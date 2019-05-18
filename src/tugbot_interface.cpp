@@ -90,7 +90,7 @@ class TugBot : public hardware_interface::RobotHW {
                 angle_delta = pos_delta * RAD_PER_CPR; // angle in radians
                 pos[i] = pos[i] + angle_delta;
 
-                std::cout << "Motor " << i << " pos " << pos[i] << std::endl;
+                std::cout << "Motor " << i << " pos " << pos[i] << " delta: " << angle_delta << std::endl;
 
             }              
             // int motor_pos;
@@ -125,10 +125,10 @@ class TugBot : public hardware_interface::RobotHW {
         odrive::ODriveDriver *motor_driver;
         hardware_interface::JointStateInterface jnt_state_interface;
         hardware_interface::VelocityJointInterface jnt_vel_interface;
-        double cmd[4];
-        double pos[4];
-        double vel[4];
-        double eff[4];
+        double cmd[4] = {0, 0, 0, 0};
+        double pos[4] = {0, 0, 0, 0};
+        double vel[4] = {0, 0, 0, 0};
+        double eff[4] = {0, 0, 0, 0};
 
         float last_pos_cpr[4];
         bool last_cpr_populated = false;

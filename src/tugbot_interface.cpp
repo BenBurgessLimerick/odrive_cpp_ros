@@ -51,7 +51,7 @@ class TugBot : public hardware_interface::RobotHW {
         motor_driver = new odrive::ODriveDriver(ser_nums, 2, set_motor_map, motor_indexes, 4);
         int result = motor_driver->init();
         if (result != 0) {
-            std::cout << "Coult not connect to odrives!"<< std::endl;
+            std::cout << "Could not connect to odrives!"<< std::endl;
             motors_enabled = false;
         } else {
             motors_enabled = true;

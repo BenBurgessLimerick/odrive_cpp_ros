@@ -12,7 +12,9 @@
 #define RIGHT_ODRIVE_SERIAL "35722175526216" 
 #define LEFT_ODRIVE_SERIAL  "35584669134923"
 #define ENCODER_CPR 90
-
+#define PI 3.14159265358979
+#define TWO_PI (2 * PI)
+#define RAD_PER_CPR (TWO_PI / ENCODER_CPR)
 
 class TugBot : public hardware_interface::RobotHW {
     public:
@@ -61,17 +63,42 @@ class TugBot : public hardware_interface::RobotHW {
     void updateJointsFromHardware() {
         std::cout << "Updating joints" << std::endl;
         float speed;
-       
+
+        float pos_cpr;
+        float pos_delta;
+        double angle_delta;
         for (int i = 0; i < 4; ++i) {
-             motor_driver->getMotorSpeed(i, speed);
+            motor_driver->getMotorSpeed(i, speed);
             vel[i] = ((speed * direction_multipliers[i]) / ENCODER_CPR) * 2 * 3.141592;
-            std::cout << "Motor: " << i << " speed: " << vel[i] << std::endl;
-             // int motor_pos;
+            
+            motor_driver->getPosCPR(i, pos_cpr);
+            last_pos_cpr[i] = pos_cpr;
+
+            if (last_cpr_populated) {
+                pos_delta = pos_cpr - last_pos_cpr[i];
+                
+                
+                if (pos_delta < - ENCODER_CPR / 2.0) {
+                    //overflow will go from eg 80 to 10. Delta = -70
+                    // want to add on ENCODER_CPR to change to delta = 20
+                    pos_delta += ENCODER_CPR;
+                } else if (pos_delta > ENCODER_CPR / 2.0) {
+                    //underflow will go from eg 10 to 80, Delta = 70
+                    pos_delta -= ENCODER_CPR;
+                }
+
+                angle_delta = pos_delta * RAD_PER_CPR; // angle in radians
+                pos[i] = pos[i] + angle_delta;
+
+
+            }              
+            // int motor_pos;
             // motor_driver->readCurrentMotorPosition(i, motor_pos);
             // std::cout << "sad: " << i << " : " << motor_pos << std::endl;
             // motor_driver->getMotorPosition(i, motor_pos);
             //motor_driver->getBusVoltage(i, speed);
         }
+        last_cpr_populated = true;
     }   
 
     void writeCommandsToHardware() {
@@ -101,6 +128,9 @@ class TugBot : public hardware_interface::RobotHW {
         double pos[4];
         double vel[4];
         double eff[4];
+
+        float last_pos_cpr[4];
+        bool last_cpr_populated = false;
 
         int direction_multipliers[4] = {-1, -1, 1, 1};
         bool motors_enabled;

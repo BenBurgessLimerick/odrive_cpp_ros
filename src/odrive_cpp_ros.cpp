@@ -136,6 +136,10 @@ int ODriveDriver::getBusVoltage(int motor_index, float &voltage) {
     std::cout << "Voltage: " << motor_index << " : " << voltage << std::endl;
 }
 
+int ODriveDriver::getPosCPR(int motor_index, float &pos) {
+    getFloat(motor_index, pos, AXIS__ENCODER__POS_CPR);
+}
+
 int ODriveDriver::getMotorSpeed(int motor_index, float &motor_speed) {
     getFloat(motor_index, motor_speed, AXIS__ENCODER__VEL_ESTIMATE);
     std::cout << "Motor speed: " << motor_index << " : " << motor_speed << std::endl;
@@ -477,7 +481,7 @@ void ODriveDriver::deserializeCommBufferFloat(commBuffer& byte_array, float& val
     //}
     //std::cout << std::endl;
     memcpy(&value, &(byte_array[0]), byte_array.size());
-    std::cout << value << std::endl;
+    // std::cout << value << std::endl;
 }
 
 

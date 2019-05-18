@@ -51,6 +51,8 @@ namespace odrive
 
         int init(); // start communication
 
+        int getPosCPR(int motor_index, float &pos);
+
         int setMotorSpeed(int motor_index, float motor_speed);
         int setMotorSpeeds(float* motor_speeds); // assumed to match num_motors
 

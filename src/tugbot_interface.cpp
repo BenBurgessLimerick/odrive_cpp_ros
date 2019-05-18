@@ -65,6 +65,7 @@ class TugBot : public hardware_interface::RobotHW {
         for (int i = 0; i < 4; ++i) {
              motor_driver->getMotorSpeed(i, speed);
             vel[i] = ((speed * direction_multipliers[i]) / ENCODER_CPR) * 2 * 3.141592;
+            std::cout << "Motor: " << i << " speed: " << vel[i] << std::endl;
              // int motor_pos;
             // motor_driver->readCurrentMotorPosition(i, motor_pos);
             // std::cout << "sad: " << i << " : " << motor_pos << std::endl;

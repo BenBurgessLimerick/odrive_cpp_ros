@@ -90,6 +90,7 @@ class TugBot : public hardware_interface::RobotHW {
                 angle_delta = pos_delta * RAD_PER_CPR; // angle in radians
                 pos[i] = pos[i] + angle_delta;
 
+                std::cout << "Motor " << i << " pos " << pos[i] << std::endl;
 
             }              
             // int motor_pos;

@@ -142,12 +142,12 @@ int ODriveDriver::getPosCPR(int motor_index, float &pos) {
 
 int ODriveDriver::getMotorSpeed(int motor_index, float &motor_speed) {
     getFloat(motor_index, motor_speed, AXIS__ENCODER__VEL_ESTIMATE);
-    std::cout << "Motor speed: " << motor_index << " : " << motor_speed << std::endl;
+    // std::cout << "Motor speed: " << motor_index << " : " << motor_speed << std::endl;
 }
 
 int ODriveDriver::getMotorPosition(int motor_index, int &motor_position) {
     getInt(motor_index, motor_position, AXIS__ENCODER__COUNT_IN_CPR);
-    std::cout << "Motor pos: " << motor_index << " : " << motor_position << std::endl;
+    // std::cout << "Motor pos: " << motor_index << " : " << motor_position << std::endl;
 }
 
 

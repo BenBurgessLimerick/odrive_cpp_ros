@@ -72,11 +72,10 @@ class TugBot : public hardware_interface::RobotHW {
             vel[i] = ((speed * direction_multipliers[i]) / ENCODER_CPR) * 2 * 3.141592;
             
             motor_driver->getPosCPR(i, pos_cpr);
-            last_pos_cpr[i] = pos_cpr;
-            std::cout << "pos: " << pos_cpr < std::endl;
+            
             if (last_cpr_populated) {
                 pos_delta = pos_cpr - last_pos_cpr[i];
-                std::cout << "pos delta : " << pos_delta < std::endl;
+                std::cout << "pos delta : " << pos_delta << std::endl;
                 
                 if (pos_delta < - ENCODER_CPR / 2.0) {
                     //overflow will go from eg 80 to 10. Delta = -70
@@ -88,12 +87,14 @@ class TugBot : public hardware_interface::RobotHW {
                 }
 
                 angle_delta = pos_delta * RAD_PER_CPR; // angle in radians
-                
+
                 pos[i] = pos[i] + angle_delta;
 
                 std::cout << "Motor " << i << " pos " << pos[i] << " delta: " << angle_delta << std::endl;
 
-            }              
+            }         
+            last_pos_cpr[i] = pos_cpr;
+
             // int motor_pos;
             // motor_driver->readCurrentMotorPosition(i, motor_pos);
             // std::cout << "sad: " << i << " : " << motor_pos << std::endl;

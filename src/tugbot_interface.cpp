@@ -72,7 +72,7 @@ class TugBot : public hardware_interface::RobotHW {
             vel[i] = ((speed * direction_multipliers[i]) / ENCODER_CPR) * 2 * 3.141592;
             
             motor_driver->getPosCPR(i, pos_cpr);
-            
+
             if (last_cpr_populated) {
                 pos_delta = pos_cpr - last_pos_cpr[i];
                 std::cout << "pos delta : " << pos_delta << std::endl;
@@ -85,7 +85,7 @@ class TugBot : public hardware_interface::RobotHW {
                     //underflow will go from eg 10 to 80, Delta = 70
                     pos_delta -= ENCODER_CPR;
                 }
-
+                pos_delta *= direction_multipliers[i];
                 angle_delta = pos_delta * RAD_PER_CPR; // angle in radians
 
                 pos[i] = pos[i] + angle_delta;

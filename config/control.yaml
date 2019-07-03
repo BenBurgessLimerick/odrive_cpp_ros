@@ -7,8 +7,8 @@ tugbot_velocity_controller:
   left_wheel: ['front_left', 'back_left']
   right_wheel: ['front_right', 'back_right']
   publish_rate: 50
-  pose_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]
-  twist_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]
+  pose_covariance_diagonal: [0.1, 0.1, 0.1, 0.1, 0.1, 0.3]
+  twist_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.09]
   cmd_vel_timeout: 0.25
   velocity_rolling_window_size: 2
 
@@ -20,7 +20,7 @@ tugbot_velocity_controller:
 
   # Odometry fused with IMU is published by robot_localization, so
   # no need to publish a TF based on encoders alone.
-  enable_odom_tf: true
+  enable_odom_tf: false
 
   estimate_velocity_from_position: false
 
